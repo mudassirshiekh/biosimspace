@@ -52,7 +52,7 @@ from sire.mol import Select as _Select
 class System(_SireWrapper):
     """A container class for storing molecular systems."""
 
-    def __init__(self, system):
+    def __init__(self, system, cache_topology=True):
         """
         Constructor.
 
@@ -118,6 +118,9 @@ class System(_SireWrapper):
                 "or a list of 'BioSimSpace._SireWrappers.Molecule' types. "
                 f"The type {type(system)} is not supported."
             )
+
+        self._cache_topology = cache_topology
+        self._topology_cache = {}
 
         # Flag that this object holds multiple atoms.
         self._is_multi_atom = True
@@ -2211,6 +2214,7 @@ class System(_SireWrapper):
         """Internal function to reset index mapping dictionaries."""
 
         # Clear dictionaries.
+        self._topology_cache = {}
         self._molecule_index = {}
         self._atom_index_tally = {}
         self._residue_index_tally = {}

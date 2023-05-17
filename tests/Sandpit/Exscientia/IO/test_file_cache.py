@@ -62,3 +62,45 @@ def test_file_cache():
 
     # The directory should now contain 7 files.
     assert len(glob.glob(f"{tmp_path}/*")) == 7
+
+
+@pytest.mark.parametrize(
+    "ext,is_cached",
+    [
+        ("prm7", True),
+        ("rst7", False),
+        ("grotop", True),
+        ("gro87", False),
+        ("pdb", False),
+    ],
+)
+@pytest.mark.parametrize("cache_topology", [True, False])
+def test_topology_cache(tmp_path_factory, ext, is_cached, cache_topology):
+    # Load the molecular system.
+    s = BSS.IO.readMolecules(["tests/input/ala.crd", "tests/input/ala.top"])
+    assert s._cache_topology is True
+    s._cache_topology = cache_topology
+    assert len(s._topology_cache) == 0
+
+    # Save.
+    workdir = tmp_path_factory.mktemp("test_topology_cache")
+    BSS.IO.saveMolecules(f"{workdir}/system", s, ext)
+
+    # Check if we have cached the topology.
+    if is_cached and cache_topology:
+        assert len(s._topology_cache) == 1
+    else:
+        assert len(s._topology_cache) == 0
+        return
+
+    # Now we replace the cache to see if we are using it when we write again.
+    (key,) = s._topology_cache
+    s._topology_cache[key] = ["dummy\n", "value\n"]
+
+    # We save again.
+    (out_file,) = BSS.IO.saveMolecules(f"{workdir}/system", s, ext)
+    assert open(out_file).readlines() == ["dummy\n", "value\n"]
+
+    # Now we modify the system - this should reset the cache.
+    s.removeMolecules(s[0])
+    assert len(s._topology_cache) == 0

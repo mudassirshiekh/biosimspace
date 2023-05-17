@@ -655,8 +655,18 @@ def saveMolecules(filebase, system, fileformat, property_map={}, **kwargs):
     # A list of the files that have been written.
     files = []
 
+    top_ext_dict = {"grotop": "top"}
+
     # Save the system using each file format.
     for format in formats:
+        ext = f".{top_ext_dict.get(format.lower(), format.lower())}"
+        if ext in system._topology_cache:
+            file = _os.path.abspath(filebase + ext)
+            with open(file, "w") as f:
+                f.writelines(system._topology_cache[ext])
+            files.append(file)
+            continue
+
         # Copy an existing file if it exists in the cache.
         ext = _check_cache(
             system,
@@ -742,6 +752,13 @@ def saveMolecules(filebase, system, fileformat, property_map={}, **kwargs):
                 raise IOError(msg) from e
             else:
                 raise IOError(msg) from None
+
+    # Cache the file contents
+    if system._cache_topology:
+        for file in files:
+            _, ext = _os.path.splitext(file)
+            if ext in [".prm7", ".top"]:
+                system._topology_cache[ext] = open(file).readlines()
 
     # Return the list of files.
     return files
