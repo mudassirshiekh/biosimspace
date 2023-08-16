@@ -128,7 +128,8 @@ def _squash_molecule(molecule, explicit_dummies=False):
             environment=False,
             dummies=False,
         )
-        assert set(atom_mapping0_common) == set(atom_mapping1_common)
+        if set(atom_mapping0_common) != set(atom_mapping1_common):
+            raise RuntimeError("The MCS atoms don't match between the two endstates")
         common_atoms = set(atom_mapping0_common)
 
         # We make sure we use the same coordinates for the common core at both endstates.
@@ -304,7 +305,8 @@ def _unsquash_molecule(molecule, squashed_molecules, explicit_dummies=False):
         environment=False,
         dummies=False,
     )
-    assert set(atom_mapping0_common) == set(atom_mapping1_common)
+    if set(atom_mapping0_common) != set(atom_mapping1_common):
+        raise RuntimeError("The MCS atoms don't match between the two endstates")
     common_atoms = set(atom_mapping0_common)
 
     # Get the atom mapping from both endstates
@@ -351,6 +353,9 @@ def _unsquash_molecule(molecule, squashed_molecules, explicit_dummies=False):
 
         # Apply the translation if the atom is coming from the second molecule.
         if len(squashed_molecules) == 2 and apply_translation_vec:
+            # This is a dummy atom so we need to translate coordinates0 as well
+            if squashed_atom_idx0 == squashed_atom_idx1:
+                coordinates0 -= translation_vec
             coordinates1 -= translation_vec
 
         siremol = merged_atom.setProperty("coordinates0", coordinates0).molecule()

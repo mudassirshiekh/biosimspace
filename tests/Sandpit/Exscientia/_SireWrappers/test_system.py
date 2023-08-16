@@ -2,6 +2,7 @@ import BioSimSpace.Sandpit.Exscientia as BSS
 
 import math
 import pytest
+import platform
 
 # Store the tutorial URL.
 url = BSS.tutorialUrl()
@@ -263,6 +264,10 @@ def test_get_box(system):
         assert math.isclose(a0.value(), a1.value(), rel_tol=1e-4)
 
 
+@pytest.mark.skipif(
+    platform != "Linux",
+    reason="Temporarily skipping test for macOS because the fixed sire 2023.2.3 has not been built for it",
+)
 def test_set_box(system):
     # Generate box dimensions and angles for a truncated octahedron.
     box, angles = BSS.Box.truncatedOctahedron(30 * BSS.Units.Length.angstrom)
