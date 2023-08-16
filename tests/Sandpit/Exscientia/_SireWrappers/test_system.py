@@ -265,7 +265,7 @@ def test_get_box(system):
 
 
 @pytest.mark.skipif(
-    platform == "Darwin",
+    platform != "Linux",
     reason="Temporarily skipping test for macOS because the fixed sire 2023.2.3 has not been built for it",
 )
 def test_set_box(system):
