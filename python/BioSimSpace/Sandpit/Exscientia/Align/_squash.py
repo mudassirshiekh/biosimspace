@@ -131,11 +131,19 @@ def _squash_molecule(molecule, explicit_dummies=False):
         assert set(atom_mapping0_common) == set(atom_mapping1_common)
         common_atoms = set(atom_mapping0_common)
 
-        # We make sure we use the same coordinates for the common core at both endstates.
+        # We modify some atom attributes
         c = molecule.copy()._sire_object.cursor()
         for i, atom in enumerate(c.atoms()):
             if i in common_atoms:
+                # We make sure we use the same coordinates for the common core at both endstates.
                 atom["coordinates1"] = atom["coordinates0"]
+            else:
+                # We make sure there are no "dummy" elements, because these are treated as hydrogens by AMBER
+                # This can create issues with TISHAKE, which expects a maximum number of bonded hydrogens
+                # So we treat these the same as carbons
+                for key in ["element0", "element1"]:
+                    if atom[key].name() == "dummy":
+                        atom[key] = _SireMol.Element(6)
         molecule = _Molecule(c.commit())
 
     # Generate a "system" from the molecule at lambda = 0 and another copy at lambda = 1.
