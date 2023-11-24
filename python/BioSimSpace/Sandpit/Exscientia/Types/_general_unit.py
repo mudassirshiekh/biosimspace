@@ -26,8 +26,6 @@ __email__ = "lester.hedges@gmail.com"
 
 __all__ = ["GeneralUnit"]
 
-import math as _math
-
 from sire.legacy.Units import GeneralUnit as _GeneralUnit
 
 from ._base_units import *
@@ -504,13 +502,13 @@ class GeneralUnit(_Type):
 
         # Compare to another object of the same type and dimensions.
         if isinstance(other, _Type) and other._dimensions == self._dimensions:
-            return _math.isclose(self._value, other._value)
+            return self._value == other._value
 
         # Compare with a string.
         elif isinstance(other, str):
             other = self._from_string(other)
             if other._dimensions == self._dimensions:
-                return _math.isclose(self._value, other._value)
+                return self._value == other._value
             else:
                 return False
 
@@ -522,13 +520,13 @@ class GeneralUnit(_Type):
 
         # Compare to another object of the same type and dimensions.
         if isinstance(other, _Type) and other._dimensions == self._dimensions:
-            return not _math.isclose(self._value, other._value)
+            return self._value != other._value
 
         # Compare with a string.
         elif isinstance(other, str):
             other = self._from_string(other)
             if other._dimensions == self._dimensions:
-                return not _math.isclose(self._value, other._value)
+                return self._value != other._value
             else:
                 return True
 
