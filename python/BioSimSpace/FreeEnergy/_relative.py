@@ -31,7 +31,6 @@ import json as _json
 import math as _math
 import numpy as _np
 import os as _os
-import pandas as _pd
 import pathlib as _pathlib
 import re as _re
 import shutil as _shutil
