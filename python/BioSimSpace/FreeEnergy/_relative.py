@@ -41,12 +41,6 @@ import sys as _sys
 import warnings as _warnings
 import zipfile as _zipfile
 
-from .._Utils import _assert_imported, _have_imported, _try_import
-
-# alchemlyb isn't available for all variants of Python that we support, so we
-# need to try_import it.
-_alchemlyb = _try_import("alchemlyb")
-
 from sire.legacy.Base import getBinDir as _getBinDir
 from sire.legacy.Base import getShareDir as _getShareDir
 
