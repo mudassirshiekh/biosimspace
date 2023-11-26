@@ -32,6 +32,7 @@ import math as _math
 import numpy as _np
 import os as _os
 import pathlib as _pathlib
+import pyarrow.parquet as _pq
 import re as _re
 import shutil as _shutil
 import subprocess as _subprocess
