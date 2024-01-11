@@ -656,7 +656,6 @@ class AlchemicalFreeEnergy:
             raise ValueError("'estimator' must be either 'MBAR' or 'TI'.")
 
         try:
-            # Use the parquet files if they are available.
             workflow = ABFE(
                 units="kcal/mol",
                 software="PARQUET",
@@ -665,9 +664,7 @@ class AlchemicalFreeEnergy:
                 suffix="parquet",
                 T=temperature / _Units.Temperature.kelvin,
                 outdirectory=work_dir,
-                **kwargs,
             )
-            workflow.run(estimators=estimator, breakdown=None, forwrev=None, **kwargs)
         except ValueError:
             if engine == "AMBER":
                 prefix = "amber"
@@ -686,9 +683,19 @@ class AlchemicalFreeEnergy:
                 suffix=suffix,
                 T=temperature / _Units.Temperature.kelvin,
                 outdirectory=work_dir,
+            )
+
+        try:
+            workflow.run(estimators=estimator, breakdown=None, forwrev=None, **kwargs)
+        except:
+            _warnings.warn("Decorrelation failed, run with no decorrelation.")
+            workflow.run(
+                estimators=estimator,
+                breakdown=None,
+                forwrev=None,
+                uncorr=None,
                 **kwargs,
             )
-            workflow.run(estimators=estimator, breakdown=None, forwrev=None, **kwargs)
 
         # Extract the data from the mbar results.
         data = []
