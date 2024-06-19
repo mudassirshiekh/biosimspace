@@ -1331,7 +1331,11 @@ class System(_SireWrapper):
             The Alchemical Ion or None if there isn't any.
         """
         try:
-            return self.search("mols with property AlchemicalIon").molecules()[0]
+            return (
+                self.search("mols with property AlchemicalIon")
+                .molecules()[0]
+                .getAtoms()[0]
+            )
         except:
             return None
 
