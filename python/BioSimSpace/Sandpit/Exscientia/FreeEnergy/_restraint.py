@@ -450,7 +450,9 @@ class Restraint:
             )
 
         # Format the parameters for the angles and dihedrals
-        def format_angle(equilibrium_values, force_constants, restraint_lambda):
+        def format_angle(
+            equilibrium_values, force_constants, restraint_lambda, free_energy
+        ):
             """
             Format the angle equilibrium values and force constant
             in into the Gromacs topology format.
@@ -465,23 +467,40 @@ class Restraint:
 
             When restraint_lambda is True, the dihedrals will be stored in the dihedral_restraints.
             """
-            converted_equ_val = (
-                self._restraint_dict["equilibrium_values"][equilibrium_values] / _degree
-            )
-            converted_fc = self._restraint_dict["force_constants"][force_constants] / (
-                _kj_per_mol / (_radian * _radian)
-            )
+            if str(equilibrium_values) in self._restraint_dict["equilibrium_values"]:
+                converted_equ_val = (
+                    self._restraint_dict["equilibrium_values"][equilibrium_values]
+                    / _degree
+                )
+            else:
+                converted_equ_val = equilibrium_values / _degree
+
+            if str(force_constants) in self._restraint_dict["force_constants"]:
+                converted_fc = self._restraint_dict["force_constants"][
+                    force_constants
+                ] / (_kj_per_mol / (_radian * _radian))
+            else:
+                converted_fc = force_constants / (_kj_per_mol / (_radian * _radian))
+
             par_string = (
                 dihedral_restraints_parameters_string
                 if restraint_lambda
                 else parameters_string
             )
-            return par_string.format(
-                eq0="{:.3f}".format(converted_equ_val),
-                fc0="{:.2f}".format(0),
-                eq1="{:.3f}".format(converted_equ_val),
-                fc1="{:.2f}".format(converted_fc),
-            )
+            if free_energy:
+                return par_string.format(
+                    eq0="{:.3f}".format(converted_equ_val),
+                    fc0="{:.2f}".format(0),
+                    eq1="{:.3f}".format(converted_equ_val),
+                    fc1="{:.2f}".format(converted_fc),
+                )
+            else:
+                return par_string.format(
+                    eq0="{:.3f}".format(converted_equ_val),
+                    fc0="{:.2f}".format(converted_fc),
+                    eq1="",
+                    fc1="",
+                )
 
         # basic format of the Gromacs string
         master_string = "  {index} {func_type} {parameters}"
@@ -493,17 +512,26 @@ class Restraint:
                 parameters=format_bond(equilibrium_values, force_constants),
             )
 
-        def write_angle(key_list, equilibrium_values, force_constants):
+        def write_angle(
+            key_list, equilibrium_values, force_constants, func_type=1, free_energy=True
+        ):
             return master_string.format(
                 index=format_index(key_list),
-                func_type=1,
+                func_type=func_type,
                 parameters=format_angle(
-                    equilibrium_values, force_constants, restraint_lambda=False
+                    equilibrium_values,
+                    force_constants,
+                    restraint_lambda=False,
+                    free_energy=free_energy,
                 ),
             )
 
         def write_dihedral(
-            key_list, equilibrium_values, force_constants, restraint_lambda
+            key_list,
+            equilibrium_values,
+            force_constants,
+            restraint_lambda,
+            free_energy=True,
         ):
             if restraint_lambda:
                 # In [ dihedral_restraints ], function type 1
@@ -517,7 +545,10 @@ class Restraint:
                 index=format_index(key_list),
                 func_type=func_type,
                 parameters=format_angle(
-                    equilibrium_values, force_constants, restraint_lambda
+                    equilibrium_values,
+                    force_constants,
+                    restraint_lambda,
+                    free_energy=free_energy,
                 ),
             )
 
@@ -539,6 +570,26 @@ class Restraint:
         output.append(write_angle(("r2", "r1", "l1"), "thetaA0", "kthetaA"))
         # Angles: r1-l1-l2 (thetaB0, kthetaB)
         output.append(write_angle(("r1", "l1", "l2"), "thetaB0", "kthetaB"))
+        # Angles: r2-r1-l1 restricted bending potential to keep from 0 and 180
+        output.append(";restricted bending potential to keep from 0 and 180")
+        output.append(
+            write_angle(
+                ("r2", "r1", "l1"),
+                90 * _degree,
+                10 * _kcal_per_mol / (_radian * _radian),
+                func_type=10,
+                free_energy=False,
+            )
+        )
+        output.append(
+            write_angle(
+                ("r1", "l1", "l2"),
+                90 * _degree,
+                10 * _kcal_per_mol / (_radian * _radian),
+                func_type=10,
+                free_energy=False,
+            )
+        )
 
         if restraint_lambda:
             output.append("[ dihedral_restraints ]")
