@@ -2721,6 +2721,8 @@ class Gromacs(_process.Process):
                     old_system._sire_object.removeProperty(space_prop)
                 else:
                     old_system._sire_object.setProperty(space_prop, old_box)
+                com = old_system._getCenterOfMass()
+                old_system.translate([-x for x in com])
 
             return old_system
 
@@ -2850,6 +2852,8 @@ class Gromacs(_process.Process):
                         old_system._sire_object.removeProperty(space_prop)
                     else:
                         old_system._sire_object.setProperty(space_prop, old_box)
+                    com = old_system._getCenterOfMass()
+                    old_system.translate([-x for x in com])
 
                 return old_system
 
