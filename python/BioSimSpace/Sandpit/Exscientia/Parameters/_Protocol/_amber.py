@@ -1113,7 +1113,7 @@ class GAFF(_protocol.Protocol):
         # Generate the Antechamber command.
         command = (
             "%s -at %d -i antechamber.%s -fi %s "
-            + "-o antechamber.mol2 -fo mol2 -c %s -s 2 -nc %d"
+            + "-o antechamber.mol2 -fo mol2 -c %s -s 2 -nc %d -dr n"
         ) % (
             _antechamber_exe,
             self._version,
