@@ -1,5 +1,6 @@
 `BioSimSpace <https://biosimspace.openbiosim.org>`__
 ====================================================
+## By Mudassir Alam
 
 .. image:: https://github.com/openbiosim/biosimspace/workflows/Build/badge.svg
    :target: https://github.com/openbiosim/biosimspace/actions?query=workflow%3ABuild)
